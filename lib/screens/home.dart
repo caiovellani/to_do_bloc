@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:to_do_bloc/todo_bloc/todo_bloc.dart';
 
 import '../data/todo.dart';
+import '../todo_bloc/todo_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   addTodo(Todo todo) {
-    context.read()<TodoBloc>().add(
+    context.read<TodoBloc>().add(
           AddTodo(todo),
         );
   }
@@ -150,60 +150,62 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8),
-        child: BlocBuilder<TodoBloc, TodoState>(builder: (context, state) {
-          if (state.status == TodoStatus.success) {
-            return ListView.builder(
-              itemCount: state.todos.length,
-              itemBuilder: (context, int i) {
-                return Card(
-                  color: Theme.of(context).colorScheme.primary,
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Slidable(
-                    key: const ValueKey(0),
-                    startActionPane: ActionPane(
-                      motion: const ScrollMotion(),
-                      children: [
-                        SlidableAction(
-                          onPressed: (_) {
-                            removeTodo(state.todos[i]);
+        child: BlocBuilder<TodoBloc, TodoState>(
+          builder: (context, state) {
+            if (state.status == TodoStatus.success) {
+              return ListView.builder(
+                itemCount: state.todos.length,
+                itemBuilder: (context, int i) {
+                  return Card(
+                    color: Theme.of(context).colorScheme.primary,
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Slidable(
+                      key: const ValueKey(0),
+                      startActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        children: [
+                          SlidableAction(
+                            onPressed: (_) {
+                              removeTodo(state.todos[i]);
+                            },
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            icon: CupertinoIcons.delete,
+                            label: 'Delete',
+                          )
+                        ],
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          state.todos[i].title,
+                        ),
+                        subtitle: Text(
+                          state.todos[i].subtitle,
+                        ),
+                        trailing: Checkbox(
+                          value: state.todos[i].isDone,
+                          activeColor: Theme.of(context).colorScheme.secondary,
+                          onChanged: (value) {
+                            alertTodo(i);
                           },
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          icon: CupertinoIcons.delete,
-                          label: 'Delete',
-                        )
-                      ],
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        state.todos[i].title,
-                      ),
-                      subtitle: Text(
-                        state.todos[i].subtitle,
-                      ),
-                      trailing: Checkbox(
-                        value: state.todos[i].isDone,
-                        activeColor: Theme.of(context).colorScheme.secondary,
-                        onChanged: (value) {
-                          alertTodo(i);
-                        },
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            );
-          } else if (state.status == TodoStatus.initial) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            return Container();
-          }
-        }),
+                  );
+                },
+              );
+            } else if (state.status == TodoStatus.initial) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return Container();
+            }
+          },
+        ),
       ),
     );
   }
